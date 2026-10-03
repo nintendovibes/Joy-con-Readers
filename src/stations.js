@@ -4,6 +4,7 @@ import {
   JoyCon1, requestJoyCon1Device, knownJoyCon1Devices, readJoyCon1Address, webHidSupported,
   NINTENDO_VENDOR_ID, JOYCON_R_PRODUCT_ID, PLAYER_LIGHTS,
 } from './joycon1/JoyCon1'
+import { keepScreenAwake } from './keepAwake'
 
 // One card per game. A game only reacts to taps posted under its own station
 // (it polls /last-nfc?station=<station>). The card's position sets the
@@ -62,6 +63,7 @@ class Readers extends EventTarget {
   start() {
     if (this._started) return
     this._started = true
+    keepScreenAwake(() => this._changed())
     if (webHidSupported()) {
       navigator.hid.addEventListener('connect', e => { if (isRightJoyCon1(e.device)) this._foundJoyCon1(e.device) })
       navigator.hid.addEventListener('disconnect', e => this._lostJoyCon1(e.device))

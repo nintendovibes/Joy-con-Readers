@@ -86,3 +86,7 @@ details ol { padding-left: 20px; line-height: 1.6; margin: 0; }
 .warning { border-color: var(--red); }
 .unassigned { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.12); }
 code { font-family: ui-monospace, monospace; font-size: 0.85em; word-break: break-all; }
+
+.awake { font-size: 0.85rem; text-align: center; padding: 6px 10px; border: 2px solid var(--ink); background: rgba(0, 0, 0, 0.45); }
+.awake.on { color: #9df09d; }
+.awake.off { color: #ffd27a; }

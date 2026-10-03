@@ -23,6 +23,7 @@ import {
   parseReport,
   REPORT_MIN_LENGTH,
 } from './protocol.js'
+import { setSteadyInterval } from '../keepAwake'
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -209,7 +210,7 @@ export class JoyCon2 extends EventTarget {
     this.nfc = { ...this.nfc, scanning: true, error: null }
     this._nfcPhase = 'stop'
     this._nfcTick()
-    this._nfcTimer = setInterval(() => this._nfcTick(), NFC_TICK_MS)
+    this._nfcTimer = setSteadyInterval(() => this._nfcTick(), NFC_TICK_MS)
   }
 
   _nfcTick() {
@@ -238,7 +239,7 @@ export class JoyCon2 extends EventTarget {
   }
 
   _clearNfcTimer() {
-    clearInterval(this._nfcTimer)
+    this._nfcTimer?.()
     this._nfcTimer = null
     this.nfc.scanning = false
   }
@@ -294,14 +295,14 @@ export class JoyCon2 extends EventTarget {
 
   _startKeepalive() {
     this._stopKeepalive()
-    this._keepaliveTimer = setInterval(() => {
+    this._keepaliveTimer = setSteadyInterval(() => {
       const { command, sub, data } = CMD_FEATURE_INFO
       this.sendCommand(command, sub, data).catch(() => {})
     }, KEEPALIVE_MS)
   }
 
   _stopKeepalive() {
-    clearInterval(this._keepaliveTimer)
+    this._keepaliveTimer?.()
     this._keepaliveTimer = null
   }
 

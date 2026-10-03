@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { readers, useReaders, webBluetoothSupported, webHidSupported, remembersJoyCon2 } from './stations'
+import { wake } from './keepAwake'
 
 // joy-con-readers.nintendovibes.com: one screen that turns right Joy-Cons
 // into Power-Up Band readers, one per game. Open it in Chrome on a computer
@@ -116,6 +117,14 @@ export default function App() {
           </p>
         </section>
       )}
+
+      <div className={`awake ${wake.active ? 'on' : 'off'}`}>
+        {wake.active
+          ? 'Keeping this Mac awake while this page is open'
+          : wake.supported
+            ? `Can't keep this Mac awake right now${wake.error ? ` (${wake.error})` : ''}. Keep this tab in front.`
+            : "This browser can't keep the Mac awake. Set the Mac to never sleep while the readers run."}
+      </div>
 
       <div className="cards">
         {r.cards.map(card => <StationCard key={card.station} card={card} busy={r.busy} />)}

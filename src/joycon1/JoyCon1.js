@@ -1,3 +1,4 @@
+import { setSteadyInterval } from '../keepAwake'
 // Copied from lego-mario (src/joycon1). Keep the copies in sync.
 // Original (Switch 1) right Joy-Con NFC reader over WebHID.
 //
@@ -284,11 +285,11 @@ export class JoyCon1 extends EventTarget {
     this._lastNfcReportAt = now
     this._searchingAt = now
     this._cycleStart = now
-    this._pollTimer = setInterval(() => this._pollTick(), POLL_MS)
+    this._pollTimer = setSteadyInterval(() => this._pollTick(), POLL_MS)
   }
 
   _stopPolling() {
-    clearInterval(this._pollTimer)
+    this._pollTimer?.()
     this._pollTimer = null
     this.nfc.scanning = false
   }
