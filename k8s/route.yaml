@@ -18,5 +18,3 @@ spec:
     # (chrome://flags/#unsafely-treat-insecure-origin-as-secure), which is
     # what lets Web Bluetooth / WebHID work without a trusted certificate.
     insecureEdgeTerminationPolicy: Allow
-    # The *.nintendovibes.com certificate is attached with
-    # scripts/apply-route-cert.sh (kept out of git because of its key).

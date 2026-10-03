@@ -32,23 +32,6 @@ Chrome on the Mac, open
 The Route allows plain http for this. If Chrome ever resets the flag after an
 update, add it again.
 
-The alternative is a trusted certificate: nintendovibes.com only exists on the home
-network, so no public certificate authority can issue it a certificate.
-Instead there's a private **Nintendo Vibes CA** whose name constraints only
-let it vouch for `nintendovibes.com` names.
-
-- `scripts/make-nintendovibes-cert.sh` creates the CA and a
-  `*.nintendovibes.com` certificate in `../nintendovibes-certs/` (outside
-  git; the keys never leave this PC).
-- `scripts/apply-route-cert.sh [route ...]` attaches that certificate to
-  OpenShift Routes (default: `joy-con-readers`).
-
-**Trust the CA once on each Mac / iPad that opens a reader:** download
-`https://joy-con-readers.nintendovibes.com/nintendovibes-ca.crt` (proceed past
-the warning the first time), open it, add it to the **login** keychain, then
-in Keychain Access set **Nintendo Vibes CA → Trust → Always Trust**. Quit and
-reopen Chrome.
-
 ## Deploying (first time)
 
 1. Create an empty GitHub repo `nintendovibes/joy-con-readers` and push this
@@ -59,20 +42,6 @@ reopen Chrome.
    tag into `k8s/kustomization.yaml`, the same as Thwomp Panel Panic.
 3. Add an Argo CD Application for this repo's `k8s/` folder (namespace
    `nintendo`), like Thwomp's, or run `oc apply -k k8s/`.
-4. Attach the certificate: `bash scripts/apply-route-cert.sh`.
-   If Argo CD self-heals this app, add to its Application spec so it doesn't
-   strip the certificate:
-
-   ```yaml
-   ignoreDifferences:
-     - group: route.openshift.io
-       kind: Route
-       name: joy-con-readers
-       jsonPointers:
-         - /spec/tls/certificate
-         - /spec/tls/key
-         - /spec/tls/caCertificate
-   ```
 
 After that, every push to `master` redeploys automatically.
 
@@ -80,7 +49,7 @@ After that, every push to `master` redeploys automatically.
 
 ```sh
 npm install
-npm run dev     # https://172.16.122.81:5181 (uses certs/, the Bowser Jr dev CA)
+npm run dev     # http://172.16.122.81:5181 (add it to the same Chrome flag on the Mac)
 ```
 
 In dev, the reader also sends its log to `logs/joy-con-readers.jsonl` on the PC.
