@@ -7,4 +7,4 @@ resources:
   - route.yaml
 images:
   - name: ghcr.io/nintendovibes/joy-con-readers
-    newTag: 051dd4855dd9e50e8c3bbc071a00c1b850b6d51c # CI overwrites this with the commit SHA on every build
+    newTag: 6fa77ce6caf4b654f173763ccb5a03ddcb90edcf # CI overwrites this with the commit SHA on every build
