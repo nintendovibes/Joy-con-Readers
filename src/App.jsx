@@ -1,140 +1,151 @@
 import { useEffect } from 'react'
-import { reader, useReader, stationFromUrl, KNOWN_STATIONS, webBluetoothSupported, remembersJoyCon2 } from './reader'
-import { webHidSupported } from './joycon1/JoyCon1'
+import { readers, useReaders, webBluetoothSupported, webHidSupported, remembersJoyCon2 } from './stations'
+
+// joy-con-readers.nintendovibes.com: one screen that turns right Joy-Cons
+// into Power-Up Band readers, one per game. Open it in Chrome on a computer
+// with Bluetooth (the Mac) and leave it open.
 
 const STATUS_TEXT = {
   idle: 'Not connected',
   connecting: 'Connecting…',
-  connected: 'Connected, reading bands',
+  connected: 'Reading bands',
   waiting: 'Waiting for the Joy-Con to reconnect',
   error: 'Problem with the Joy-Con, retrying',
   disconnected: 'Disconnected',
 }
 
-// joy-con-readers.nintendovibes.com: Joy-Con band readers for the Nintendo NFC games.
-//   /                         home: links to each game's Joy-Con reader
-//   /joycon?station=dk-spin   Joy-Con reader for one game's station
+const SITE = 'http://joy-con-readers.nintendovibes.com'
 
-function PickStation() {
+function Lights({ index }) {
   return (
-    <section className="panel">
-      <div className="label">WHICH GAME IS THIS JOY-CON FOR?</div>
-      <p className="muted">Each game only reacts to taps sent to its own station.</p>
-      <div className="row">
-        {KNOWN_STATIONS.map(s => (
-          <a key={s.station} className="btn" href={`/joycon?station=${s.station}`}>{s.name.toUpperCase()}</a>
-        ))}
+    <span className="lights" title={`Player light ${index + 1}`}>
+      {[0, 1, 2, 3].map(i => <span key={i} className={i <= index ? 'on' : ''} />)}
+    </span>
+  )
+}
+
+function StationCard({ card, busy }) {
+  const jc = card.joycon
+  const status = jc?.status ?? 'idle'
+  return (
+    <section className={`panel card ${status}`}>
+      <div className="card-head">
+        <div>
+          <div className="card-name">{card.name}</div>
+          <div className="muted small">station: {card.station}</div>
+        </div>
+        <Lights index={card.index} />
       </div>
-      <p className="muted">Bookmark the page that opens, so this computer always reads for that game.</p>
+
+      <div className="device-head">
+        <span className={`dot ${status}`} />
+        <span>{jc ? STATUS_TEXT[status] ?? status : 'No Joy-Con yet'}</span>
+      </div>
+      {jc && (
+        <div className="muted small">
+          {jc.kind === 'switch1' ? `Switch 1 Joy-Con${jc.address ? ` · ${jc.address}` : ''}` : `Switch 2 Joy-Con · ${jc.name}`}
+        </div>
+      )}
+      {jc?.nfc?.error && <div className="small-error">{jc.nfc.error}</div>}
+
+      <div className="last-tap">
+        {card.lastTap
+          ? <>Last tap: <b>{card.lastTap.player ?? 'unregistered band'}</b> at {card.lastTap.at}</>
+          : <span className="muted">No taps yet</span>}
+      </div>
+
+      <div className="row">
+        {jc ? (
+          <>
+            <button className="btn small" disabled={busy || status === 'connected'} onClick={() => readers.reconnect(card)}>RECONNECT</button>
+            <button className="btn small dark" onClick={() => readers.unassign(card)}>REMOVE</button>
+          </>
+        ) : (
+          <>
+            <button className="btn small" disabled={busy || !webHidSupported()} onClick={() => readers.connectSwitch1(card)}>
+              SWITCH 1 JOY-CON
+            </button>
+            <button className="btn small" disabled={busy || !webBluetoothSupported()} onClick={() => readers.connectSwitch2(card)}>
+              SWITCH 2 JOY-CON
+            </button>
+          </>
+        )}
+      </div>
     </section>
   )
 }
 
-function Home() {
+function Unassigned({ items, cards }) {
+  if (!items.length) return null
   return (
-    <main className="page">
-      <h1 className="title">JOY-CON READERS</h1>
-      <PickStation />
-      <section className="panel">
-        <div className="label">FIRST TIME ON THIS COMPUTER?</div>
-        <p className="muted">
-          Chrome only allows Bluetooth on pages it treats as secure. In Chrome on this computer, open
-          {' '}<code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code>, add
-          {' '}<code>http://joy-con-readers.nintendovibes.com</code>, set it to Enabled, and relaunch Chrome.
-        </p>
-      </section>
-    </main>
+    <section className="panel">
+      <div className="label">JOY-CONS WITHOUT A GAME</div>
+      {items.map(item => (
+        <div key={item.key} className="unassigned">
+          <span>Switch 1 Joy-Con · {item.address}</span>
+          <div className="row">
+            {cards.map(card => (
+              <button key={card.station} className="btn small" onClick={() => readers.assignUnassigned(item, card)}>
+                USE FOR {card.name.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
   )
 }
 
 export default function App() {
-  return window.location.pathname.startsWith('/joycon') ? <ReaderPage /> : <Home />
-}
+  const r = useReaders()
+  const secure = window.isSecureContext
 
-function ReaderPage() {
-  const station = stationFromUrl()
-  const r = useReader()
-  const jc = r.joycon
-  const status = jc?.status ?? 'idle'
-  const game = KNOWN_STATIONS.find(s => s.station === station)?.name
-
-  useEffect(() => {
-    if (station) reader.start(station)
-  }, [station])
+  useEffect(() => { readers.start() }, [])
 
   return (
     <main className="page">
-      <h1 className="title">JOY-CON READER</h1>
+      <h1 className="title">JOY-CON READERS</h1>
 
-      {!station ? <PickStation /> : (
-        <>
-          <section className="panel station">
-            <div className="label">STATION</div>
-            <div className="station-name">{station}</div>
-            <p className="muted">
-              Taps on this Joy-Con only start {game ?? `the game using the "${station}" station`}. Keep this tab open.
-            </p>
-          </section>
-
-          <section className="panel">
-            <div className="device-head">
-              <span className={`dot ${status}`} />
-              <strong>{jc ? jc.name : 'Joy-Con (R)'}</strong>
-              {jc && <span className="muted">{jc.kind === 'switch1' ? 'Switch 1' : 'Switch 2'}</span>}
-            </div>
-            <div className="muted">{STATUS_TEXT[status] ?? status}</div>
-            {jc?.nfc?.error && <div className="small-error">{jc.nfc.error}</div>}
-            <div className="row">
-              {jc ? (
-                <>
-                  <button
-                    className="btn small"
-                    disabled={r.busy || status === 'connected'}
-                    onClick={() => (jc.kind === 'switch1' ? reader.connectJoyCon1() : reader.connectJoyCon2())}
-                  >
-                    RECONNECT
-                  </button>
-                  <button className="btn small dark" onClick={() => reader.remove()}>REMOVE</button>
-                </>
-              ) : (
-                <>
-                  <button className="btn small" disabled={r.busy || !webHidSupported()} onClick={() => reader.connectJoyCon1()}>
-                    SWITCH 1 JOY-CON
-                  </button>
-                  <button className="btn small" disabled={r.busy || !webBluetoothSupported()} onClick={() => reader.connectJoyCon2()}>
-                    SWITCH 2 JOY-CON
-                  </button>
-                </>
-              )}
-            </div>
-          </section>
-
-          <details className="panel">
-            <summary>Setup</summary>
-            <ol>
-              <li>Keep the Switch and Switch 2 off or out of range, or they'll grab the Joy-Con back.</li>
-              <li><b>Switch 1 Joy-Con:</b> pair the right Joy-Con in this computer's Bluetooth settings first (hold the sync button until the lights run, then pick "Joy-Con (R)"). Then click Switch 1 Joy-Con. After that it reconnects by itself.</li>
-              <li><b>Switch 2 Joy-Con:</b> don't pair it in Bluetooth settings. Hold the sync button on its rail until the lights sweep, then click Switch 2 Joy-Con.</li>
-              <li>Tap a band on the Joy-Con's stick. The log shows who it was sent for.</li>
-              <li>To read for another game on this same computer, open this page with that game's station in another tab and give it a different Joy-Con.</li>
-            </ol>
-            {!remembersJoyCon2() && (
-              <p className="muted">
-                A Switch 2 Joy-Con is forgotten when this page reloads unless
-                chrome://flags/#enable-experimental-web-platform-features is on.
-              </p>
-            )}
-          </details>
-
-          <section className="panel">
-            <div className="label">LOG</div>
-            {r.log.length === 0 && <div className="muted">Nothing yet.</div>}
-            {r.log.map(e => (
-              <div key={e.key} className={`log-line ${e.level}`}>{e.time} {e.text}</div>
-            ))}
-          </section>
-        </>
+      {!secure && (
+        <section className="panel warning">
+          <div className="label">CHROME NEEDS ONE SETTING FIRST</div>
+          <p className="muted">
+            Chrome only allows Joy-Cons on pages it treats as secure. On this computer, open
+            {' '}<code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code>, add <code>{SITE}</code>,
+            set it to Enabled, and relaunch Chrome.
+          </p>
+        </section>
       )}
+
+      <div className="cards">
+        {r.cards.map(card => <StationCard key={card.station} card={card} busy={r.busy} />)}
+      </div>
+
+      <Unassigned items={r.unassigned} cards={r.cards} />
+
+      <details className="panel">
+        <summary>Setup</summary>
+        <ol>
+          <li>Keep the Switch and Switch 2 off or out of range, or they'll grab the Joy-Cons back.</li>
+          <li><b>Switch 1 Joy-Con:</b> pair each right Joy-Con in this computer's Bluetooth settings first (hold the sync button until the lights run, then pick "Joy-Con (R)"). Then click Switch 1 Joy-Con on a game's card and pick it.</li>
+          <li><b>Switch 2 Joy-Con:</b> don't pair it in Bluetooth settings. Hold the sync button on its rail until the lights sweep, then click Switch 2 Joy-Con on a game's card.</li>
+          <li>Each Joy-Con shows its game's player lights: one light for the first game, two for the second. This page remembers which Joy-Con is which and reconnects them by itself.</li>
+          <li>To move a Joy-Con to another game, click Remove on its card, then Use For on the other game.</li>
+        </ol>
+        {!remembersJoyCon2() && (
+          <p className="muted small">
+            Switch 2 Joy-Cons are forgotten on reload unless chrome://flags/#enable-experimental-web-platform-features is on.
+          </p>
+        )}
+      </details>
+
+      <section className="panel">
+        <div className="label">LOG</div>
+        {r.log.length === 0 && <div className="muted">Nothing yet.</div>}
+        {r.log.map(e => (
+          <div key={e.key} className={`log-line ${e.level}`}>{e.time} {e.text}</div>
+        ))}
+      </section>
     </main>
   )
 }

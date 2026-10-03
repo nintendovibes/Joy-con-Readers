@@ -72,3 +72,17 @@ details ol { padding-left: 20px; line-height: 1.6; margin: 0; }
 .log-line { font-family: ui-monospace, monospace; font-size: 0.8rem; }
 .log-line.error { color: #ff9a9a; }
 .link { color: var(--yellow); }
+
+.page { max-width: 880px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.card.connected { border-color: var(--green); }
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.card-name { font-family: 'Press Start 2P', monospace; font-size: 0.8rem; line-height: 1.5; color: var(--yellow); text-shadow: 2px 2px 0 var(--ink); }
+.small { font-size: 0.8rem; }
+.last-tap { font-size: 0.9rem; }
+.lights { display: inline-flex; gap: 4px; flex: none; padding-top: 2px; }
+.lights span { width: 10px; height: 10px; border-radius: 2px; background: rgba(255, 255, 255, 0.2); border: 1px solid var(--ink); }
+.lights span.on { background: #6cf06c; }
+.warning { border-color: var(--red); }
+.unassigned { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+code { font-family: ui-monospace, monospace; font-size: 0.85em; word-break: break-all; }

@@ -109,10 +109,47 @@ export async function knownJoyCon1Devices() {
   return devices.filter(d => d.vendorId === NINTENDO_VENDOR_ID && d.productId === JOYCON_R_PRODUCT_ID)
 }
 
+// Reads the Joy-Con's Bluetooth address (subcommand 0x02, "device info"):
+// the only way to tell two right Joy-Cons apart, since WebHID gives them the
+// same name. Opens the device if needed. Resolves to "AA:BB:CC:DD:EE:FF".
+export async function readJoyCon1Address(device, timeoutMs = 1500) {
+  if (!device.opened) await device.open()
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const address = await new Promise(resolve => {
+      const done = value => {
+        clearTimeout(timer)
+        device.removeEventListener('inputreport', onReport)
+        resolve(value)
+      }
+      const onReport = e => {
+        // 0x21 = subcommand reply; byte 13 echoes the subcommand; the
+        // address is bytes 18-23 (dekuNukem notes; aka256/joycon-webhid).
+        if (e.reportId !== 0x21 || e.data.byteLength < 24 || e.data.getUint8(13) !== 0x02) return
+        const bytes = []
+        for (let i = 18; i < 24; i++) bytes.push(e.data.getUint8(i).toString(16).padStart(2, '0'))
+        done(bytes.join(':').toUpperCase())
+      }
+      const timer = setTimeout(() => done(null), timeoutMs)
+      device.addEventListener('inputreport', onReport)
+      device.sendReport(0x01, Uint8Array.from([attempt & 0x0f, ...NEUTRAL_RUMBLE, 0x02])).catch(() => done(null))
+    })
+    if (address) return address
+  }
+  throw new Error("The Joy-Con didn't report its address")
+}
+
+// Player-light patterns: the low 4 bits are the 4 lights.
+export const PLAYER_LIGHTS = [0x01, 0x03, 0x07, 0x0f]
+
+// The page that owns the Joy-Cons watches navigator.hid 'connect' and
+// 'disconnect' (it has to work out which Joy-Con came back), then calls
+// reattach() / markDisconnected() on the right JoyCon1.
 export class JoyCon1 extends EventTarget {
-  constructor(device) {
+  constructor(device, { lights = PLAYER_LIGHTS[0], address = null } = {}) {
     super()
     this.device = device
+    this.address = address
+    this._lights = lights
     this.side = 'R'
     this.kind = 'switch1'
     this.status = 'idle'
@@ -127,10 +164,6 @@ export class JoyCon1 extends EventTarget {
     this._retryTimer = null
     this._retryDelay = RETRY_MIN_MS
     this._onReport = this._onReport.bind(this)
-    this._onHidConnect = this._onHidConnect.bind(this)
-    this._onHidDisconnect = this._onHidDisconnect.bind(this)
-    navigator.hid.addEventListener('connect', this._onHidConnect)
-    navigator.hid.addEventListener('disconnect', this._onHidDisconnect)
   }
 
   get name() {
@@ -149,7 +182,7 @@ export class JoyCon1 extends EventTarget {
       this.device.removeEventListener('inputreport', this._onReport)
       this.device.addEventListener('inputreport', this._onReport)
       await this._setUpNfc()
-      await this._subcommand(SUB_SET_PLAYER_LIGHTS, [0x01])
+      await this._subcommand(SUB_SET_PLAYER_LIGHTS, [this._lights])
       this._startPolling()
       this.error = null
       this.nfc.error = null
@@ -196,8 +229,6 @@ export class JoyCon1 extends EventTarget {
     this._disposed = true
     this._clearRetry()
     this._stopPolling()
-    navigator.hid.removeEventListener('connect', this._onHidConnect)
-    navigator.hid.removeEventListener('disconnect', this._onHidDisconnect)
     this.device.removeEventListener('inputreport', this._onReport)
     if (this.device.opened) {
       this._sendMcu(MCU_CMD_NFC, NFC_STOP_POLLING).catch(() => {})
@@ -343,21 +374,18 @@ export class JoyCon1 extends EventTarget {
     }
   }
 
-  _onHidConnect(event) {
-    const d = event.device
-    if (this._disposed || d.vendorId !== NINTENDO_VENDOR_ID || d.productId !== JOYCON_R_PRODUCT_ID) return
-    if (this.status === 'connected' || this._connecting) return
+  // This Joy-Con came back (Chrome gives it a new HIDDevice object).
+  reattach(device) {
+    if (this._disposed || this.status === 'connected' || this._connecting) return
     this._debug('Joy-Con reconnected to the computer')
-    this.device = d
+    this.device = device
     this._retryDelay = RETRY_MIN_MS
     // Give the Joy-Con a moment to settle; set-up right away often fails.
     setTimeout(() => this.connect().catch(() => {}), 500)
   }
 
-  _onHidDisconnect(event) {
-    const d = event.device
-    const ours = d === this.device || (d.vendorId === NINTENDO_VENDOR_ID && d.productId === JOYCON_R_PRODUCT_ID)
-    if (!ours || this._disposed) return
+  markDisconnected() {
+    if (this._disposed) return
     this._debug('Joy-Con disconnected from the computer')
     this._clearRetry()
     this._stopPolling()

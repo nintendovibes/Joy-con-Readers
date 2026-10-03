@@ -3,22 +3,24 @@
 Joy-Con band readers for the Nintendo NFC games, at
 **http://joy-con-readers.nintendovibes.com**.
 
-## Joy-Con readers
+## How it works
 
-`/joycon?station=<station>` turns a right Joy-Con (Switch 1 or Switch 2) into a
-Power-Up Band reader for one game. Every tap is posted to the shared API under
-that station, and only the game polling that station reacts:
+One screen with a card per game (Thwomp Panel Panic and DK Spin). On each
+card, connect a right Joy-Con (Switch 1 or Switch 2); every band tapped on it
+is posted to the shared API under that game's **station**, and only that game
+reacts (it polls `/last-nfc?station=<station>`).
 
-| Game | Address |
-|---|---|
-| DK Spin | `http://joy-con-readers.nintendovibes.com/joycon?station=dk-spin` |
-| Thwomp Panel Panic | `http://joy-con-readers.nintendovibes.com/joycon?station=thwomp` |
+- Each Joy-Con shows its card's player lights: one light for Thwomp, two for
+  DK Spin.
+- The page remembers which Joy-Con is which (a Switch 1 Joy-Con by its
+  Bluetooth address, a Switch 2 Joy-Con by Chrome's device id) and gives each
+  one back to its game when it reconnects or the page reloads.
+- A connected Switch 1 Joy-Con with no game yet is listed under "Joy-Cons
+  without a game", with a button per game.
+- To add a game, add it to `STATIONS` in `src/stations.js` and have the
+  game poll its station.
 
-Open it in Chrome or Edge on a computer with Bluetooth (the Mac), bookmark the
-address for the game, and keep the tab open. Several tabs with different
-stations can run at once, each with its own Joy-Con. To add a game, add it to
-`KNOWN_STATIONS` in `src/reader.js` and have the game poll
-`/last-nfc?station=<station>`.
+Open it in Chrome on the Mac and leave the tab open.
 
 ## Letting Chrome use Bluetooth here
 
@@ -85,7 +87,7 @@ In dev, the reader also sends its log to `logs/joy-con-readers.jsonl` on the PC.
 
 ## Code
 
-- `src/App.jsx`: home page and the reader page.
-- `src/reader.js`: connects the Joy-Con, reconnects it, posts taps.
+- `src/App.jsx`: the screen (a card per game).
+- `src/stations.js`: which Joy-Con reads for which game; connects, reconnects, posts taps.
 - `src/joycon1/JoyCon1.js`: Switch 1 Joy-Con NFC over WebHID.
 - `src/joycon2/`: Switch 2 Joy-Con over Web Bluetooth (copied from Bowser Jr).
