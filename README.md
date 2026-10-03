@@ -49,8 +49,12 @@ After that, every push to `master` redeploys automatically.
 
 ```sh
 npm install
-npm run dev     # http://172.16.122.81:5181 (add it to the same Chrome flag on the Mac)
+npm run dev     # https://172.16.122.81:5181, like Bowser Jr's dev server
 ```
+
+Copy `server.crt` and `server.key` from `../Bowser Jr/certs/` into `certs/`
+(git-ignored) first; the Mac already trusts that certificate. Without them
+the dev server runs on plain http.
 
 In dev, the reader also sends its log to `logs/joy-con-readers.jsonl` on the PC.
 

@@ -3,9 +3,12 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Plain http on purpose: the Mac's Chrome treats this address as secure via
-// chrome://flags/#unsafely-treat-insecure-origin-as-secure (add
-// http://172.16.122.81:5181), which is what Web Bluetooth / WebHID need.
+// Web Bluetooth / WebHID only work on secure pages. Like Bowser Jr's dev
+// server, this runs on https://172.16.122.81:5181 when certs/ holds copies of
+// Bowser Jr's dev certificate (server.key, server.crt), which the Mac already
+// trusts (Bowser Jr Dev CA). certs/ is git-ignored. Without it, plain http.
+const certFile = name => path.resolve(__dirname, 'certs', name)
+const hasCerts = ['server.key', 'server.crt'].every(f => fs.existsSync(certFile(f)))
 
 // Dev-only: the Mac sends the station's log here, one JSON line per POST,
 // appended to logs/<name>.jsonl on this PC.
@@ -41,6 +44,9 @@ export default defineConfig({
     host: true,
     port: 5181,
     strictPort: true,
+    https: hasCerts
+      ? { key: fs.readFileSync(certFile('server.key')), cert: fs.readFileSync(certFile('server.crt')) }
+      : undefined,
     proxy: {
       '/api': {
         target: 'http://localhost:8001',
