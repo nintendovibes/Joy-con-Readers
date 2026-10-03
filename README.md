@@ -1,7 +1,7 @@
 # Nintendo Vibes
 
 Shared pages for the Nintendo NFC games, at
-**https://nintendo-vibes.nintendovibes.com**.
+**http://nintendo-vibes.nintendovibes.com**.
 
 ## Joy-Con readers
 
@@ -11,8 +11,8 @@ that station, and only the game polling that station reacts:
 
 | Game | Address |
 |---|---|
-| DK Spin | `https://nintendo-vibes.nintendovibes.com/joycon?station=dk-spin` |
-| Thwomp Panel Panic | `https://nintendo-vibes.nintendovibes.com/joycon?station=thwomp` |
+| DK Spin | `http://nintendo-vibes.nintendovibes.com/joycon?station=dk-spin` |
+| Thwomp Panel Panic | `http://nintendo-vibes.nintendovibes.com/joycon?station=thwomp` |
 
 Open it in Chrome or Edge on a computer with Bluetooth (the Mac), bookmark the
 address for the game, and keep the tab open. Several tabs with different
