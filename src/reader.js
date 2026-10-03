@@ -196,10 +196,10 @@ async function playerLabel(uid) {
 }
 
 // Dev only: sends a log line to the PC running the dev server
-// (logs/joycon-reader.jsonl). The deployed site has no such endpoint.
+// (logs/nintendo-vibes.jsonl). The deployed site has no such endpoint.
 function shipLog(entry) {
   if (!import.meta.env.DEV) return
-  fetch('/__debug-log?name=joycon-reader', {
+  fetch('/__debug-log?name=nintendo-vibes', {
     method: 'POST',
     body: JSON.stringify({ at: new Date().toISOString(), ...entry }),
     keepalive: true,

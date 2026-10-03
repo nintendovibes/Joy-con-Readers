@@ -71,3 +71,4 @@ details ol { padding-left: 20px; line-height: 1.6; margin: 0; }
 
 .log-line { font-family: ui-monospace, monospace; font-size: 0.8rem; }
 .log-line.error { color: #ff9a9a; }
+.link { color: var(--yellow); }

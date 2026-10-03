@@ -1,14 +1,14 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: joycon-reader
+  name: nintendo-vibes
   labels:
-    app: joycon-reader
+    app: nintendo-vibes
 spec:
-  host: joycon-reader.nintendovibes.com
+  host: nintendo-vibes.nintendovibes.com
   to:
     kind: Service
-    name: joycon-reader
+    name: nintendo-vibes
   port:
     targetPort: http
   tls:

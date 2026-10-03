@@ -11,6 +11,10 @@ const STATUS_TEXT = {
   disconnected: 'Disconnected',
 }
 
+// nintendo-vibes.nintendovibes.com: shared pages for the Nintendo NFC games.
+//   /                         home: links to each game's Joy-Con reader
+//   /joycon?station=dk-spin   Joy-Con reader for one game's station
+
 function PickStation() {
   return (
     <section className="panel">
@@ -18,7 +22,7 @@ function PickStation() {
       <p className="muted">Each game only reacts to taps sent to its own station.</p>
       <div className="row">
         {KNOWN_STATIONS.map(s => (
-          <a key={s.station} className="btn" href={`?station=${s.station}`}>{s.name.toUpperCase()}</a>
+          <a key={s.station} className="btn" href={`/joycon?station=${s.station}`}>{s.name.toUpperCase()}</a>
         ))}
       </div>
       <p className="muted">Bookmark the page that opens, so this computer always reads for that game.</p>
@@ -26,7 +30,28 @@ function PickStation() {
   )
 }
 
+function Home() {
+  return (
+    <main className="page">
+      <h1 className="title">NINTENDO VIBES</h1>
+      <PickStation />
+      <section className="panel">
+        <div className="label">FIRST TIME ON THIS COMPUTER?</div>
+        <p className="muted">
+          Bluetooth only works on trusted pages. Download the{' '}
+          <a href="/nintendovibes-ca.crt" className="link">Nintendo Vibes certificate</a>, open it, add it to the login
+          keychain, and in Keychain Access set it to Always Trust. Then quit and reopen Chrome.
+        </p>
+      </section>
+    </main>
+  )
+}
+
 export default function App() {
+  return window.location.pathname.startsWith('/joycon') ? <ReaderPage /> : <Home />
+}
+
+function ReaderPage() {
   const station = stationFromUrl()
   const r = useReader()
   const jc = r.joycon

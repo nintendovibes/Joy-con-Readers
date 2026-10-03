@@ -2,14 +2,14 @@
 # Attaches the *.nintendovibes.com certificate (from make-nintendovibes-cert.sh)
 # to OpenShift Routes, so Chrome trusts those sites. Needs `oc` logged in.
 #
-#   bash scripts/apply-route-cert.sh [route ...]     (default: joycon-reader)
+#   bash scripts/apply-route-cert.sh [route ...]     (default: nintendo-vibes)
 #
 # The key never goes into git. If Argo CD manages a Route with self-heal on,
 # tell it to ignore these fields or it will strip them (see README.md).
 set -euo pipefail
 NS="${NS:-nintendo}"
 DIR="${CERT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)/nintendovibes-certs}"
-ROUTES=("$@"); [ ${#ROUTES[@]} -eq 0 ] && ROUTES=(joycon-reader)
+ROUTES=("$@"); [ ${#ROUTES[@]} -eq 0 ] && ROUTES=(nintendo-vibes)
 
 for f in nintendovibes.crt nintendovibes.key nintendovibes-ca.crt; do
   [ -f "$DIR/$f" ] || { echo "Missing $DIR/$f - run scripts/make-nintendovibes-cert.sh first"; exit 1; }
