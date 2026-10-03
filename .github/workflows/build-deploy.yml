@@ -17,7 +17,9 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}   # nintendovibes/joy-con-readers
+  # Fixed, lowercase name: image names must be lowercase, and the repo is
+  # called Joy-con-Readers. Must match the image name in k8s/.
+  IMAGE_NAME: nintendovibes/joy-con-readers
 
 jobs:
   build:
