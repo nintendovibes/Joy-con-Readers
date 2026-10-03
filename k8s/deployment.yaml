@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: joycon-reader
+  labels:
+    app: joycon-reader
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: joycon-reader
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: joycon-reader
+    spec:
+      imagePullSecrets:
+        - name: nintendo-ghrc-pull
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: ghcr.io/nintendovibes/nintendo-world-joycon-reader:latest
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            # Authoritative backend address. Editing this rolls the pods,
+            # which re-renders nginx with the new upstream.
+            - name: API_UPSTREAM
+              value: "http://172.16.122.81:8001"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits:   { cpu: 200m, memory: 128Mi }
+          volumeMounts:
+            - { name: tmp,   mountPath: /tmp }
+            - { name: cache, mountPath: /var/cache/nginx }
+            - { name: conf,  mountPath: /etc/nginx/conf.d }
+      volumes:
+        - { name: tmp,   emptyDir: {} }
+        - { name: cache, emptyDir: {} }
+        - { name: conf,  emptyDir: {} }   # entrypoint renders default.conf here

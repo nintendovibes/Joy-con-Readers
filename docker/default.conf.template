@@ -1,0 +1,50 @@
+server {
+    listen       8080;
+    server_name  _;
+
+    root   /usr/share/nginx/html;
+    index  index.html;
+
+    server_tokens off;
+
+    # Defense-in-depth headers (tighten CSP as the app grows)
+    add_header X-Frame-Options        "SAMEORIGIN"                       always;
+    add_header X-Content-Type-Options "nosniff"                          always;
+    add_header Referrer-Policy        "strict-origin-when-cross-origin"  always;
+
+    # Container/probe health endpoint (cheap, no logging)
+    location = /healthz {
+        access_log off;
+        add_header Content-Type text/plain;
+        return 200 "ok\n";
+    }
+
+    # Proxy to the shared Nintendo API. ${API_UPSTREAM} is the ONLY token
+    # envsubst replaces (the entrypoint only substitutes defined env vars, so
+    # nginx's own $host/$uri/etc. are left intact). The trailing slash strips
+    # the /api prefix: /api/leaderboard -> ${API_UPSTREAM}/leaderboard.
+    location /api/ {
+        proxy_pass ${API_UPSTREAM}/;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Hashed Vite assets are immutable -- cache hard
+    location /assets/ {
+        try_files $uri =404;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # SPA fallback for client-side (react-router) routes.
+    # index.html references the hashed /assets/ bundle by name, so it must
+    # always be revalidated -- otherwise a browser (an iPad left open on the
+    # kiosk, say) can keep serving a stale index.html pointing at last
+    # deploy's JS filename for hours without ever re-checking.
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+}

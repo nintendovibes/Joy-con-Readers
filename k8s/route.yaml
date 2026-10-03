@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: joycon-reader
+  labels:
+    app: joycon-reader
+spec:
+  host: joycon-reader.nintendovibes.com
+  to:
+    kind: Service
+    name: joycon-reader
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    # http:// has no Web Bluetooth or WebHID, so always send to https.
+    insecureEdgeTerminationPolicy: Redirect
+    # The *.nintendovibes.com certificate is attached with
+    # scripts/apply-route-cert.sh (kept out of git because of its key).

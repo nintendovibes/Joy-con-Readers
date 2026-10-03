@@ -1,0 +1,73 @@
+:root {
+  --sky-top: #5c94fc;
+  --sky-bot: #9cc4ff;
+  --red: #e52521;
+  --yellow: #fbd000;
+  --green: #43b047;
+  --ink: #000;
+  --panel: rgba(0, 0, 0, 0.55);
+  --text: #fff;
+  --muted: #d8d8d8;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, var(--sky-top), var(--sky-bot));
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.page { max-width: 640px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+.title, .label, .station-name, .btn { font-family: 'Press Start 2P', monospace; }
+
+.title {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: clamp(0.9rem, 3.5vw, 1.3rem);
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 var(--ink);
+  line-height: 1.5;
+}
+
+.panel { background: var(--panel); border: 3px solid var(--ink); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.panel.station { border-color: var(--yellow); text-align: center; align-items: center; }
+.label { font-size: 0.6rem; color: var(--yellow); }
+.station-name { font-size: clamp(1rem, 5vw, 1.6rem); text-shadow: 3px 3px 0 var(--ink); word-break: break-word; }
+.muted { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; }
+.small-error { color: #ff9a9a; font-size: 0.85rem; }
+
+.device-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); background: #888; flex: none; }
+.dot.connected { background: var(--green); }
+.dot.connecting, .dot.waiting { background: var(--yellow); }
+.dot.error { background: var(--red); }
+
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn {
+  font-size: 0.6rem;
+  background: var(--yellow);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-bottom-width: 5px;
+  padding: 10px 12px;
+  cursor: pointer;
+  line-height: 1.4;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn:active { transform: translateY(2px); border-bottom-width: 3px; }
+.btn:disabled { opacity: 0.45; cursor: default; transform: none; }
+.btn.dark { background: #2a2a2a; color: #ccc; }
+.btn.small { font-size: 0.55rem; }
+
+details summary { cursor: pointer; font-weight: 600; }
+details ol { padding-left: 20px; line-height: 1.6; margin: 0; }
+
+.log-line { font-family: ui-monospace, monospace; font-size: 0.8rem; }
+.log-line.error { color: #ff9a9a; }

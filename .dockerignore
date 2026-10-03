@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+dist
+k8s
+argocd
+**/*.md
+npm-debug.log*
+certs
+logs
+scripts
