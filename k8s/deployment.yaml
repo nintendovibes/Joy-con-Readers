@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nintendo-vibes
+  name: joy-con-readers
   labels:
-    app: nintendo-vibes
+    app: joy-con-readers
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: nintendo-vibes
+      app: joy-con-readers
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       labels:
-        app: nintendo-vibes
+        app: joy-con-readers
     spec:
       imagePullSecrets:
         - name: nintendo-ghrc-pull
@@ -27,7 +27,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: web
-          image: ghcr.io/nintendovibes/nintendo-vibes:latest
+          image: ghcr.io/nintendovibes/joy-con-readers:latest
           ports:
             - name: http
               containerPort: 8080

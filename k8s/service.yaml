@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nintendo-vibes
+  name: joy-con-readers
   labels:
-    app: nintendo-vibes
+    app: joy-con-readers
 spec:
   selector:
-    app: nintendo-vibes
+    app: joy-con-readers
   ports:
     - name: http
       port: 8080

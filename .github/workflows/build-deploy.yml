@@ -17,7 +17,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}   # nintendovibes/nintendo-vibes
+  IMAGE_NAME: ${{ github.repository }}   # nintendovibes/joy-con-readers
 
 jobs:
   build:

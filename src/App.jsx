@@ -11,7 +11,7 @@ const STATUS_TEXT = {
   disconnected: 'Disconnected',
 }
 
-// nintendo-vibes.nintendovibes.com: shared pages for the Nintendo NFC games.
+// joy-con-readers.nintendovibes.com: Joy-Con band readers for the Nintendo NFC games.
 //   /                         home: links to each game's Joy-Con reader
 //   /joycon?station=dk-spin   Joy-Con reader for one game's station
 
@@ -33,14 +33,14 @@ function PickStation() {
 function Home() {
   return (
     <main className="page">
-      <h1 className="title">NINTENDO VIBES</h1>
+      <h1 className="title">JOY-CON READERS</h1>
       <PickStation />
       <section className="panel">
         <div className="label">FIRST TIME ON THIS COMPUTER?</div>
         <p className="muted">
           Chrome only allows Bluetooth on pages it treats as secure. In Chrome on this computer, open
           {' '}<code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code>, add
-          {' '}<code>http://nintendo-vibes.nintendovibes.com</code>, set it to Enabled, and relaunch Chrome.
+          {' '}<code>http://joy-con-readers.nintendovibes.com</code>, set it to Enabled, and relaunch Chrome.
         </p>
       </section>
     </main>

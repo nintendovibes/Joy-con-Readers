@@ -1,20 +1,20 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: nintendo-vibes
+  name: joy-con-readers
   labels:
-    app: nintendo-vibes
+    app: joy-con-readers
 spec:
-  host: nintendo-vibes.nintendovibes.com
+  host: joy-con-readers.nintendovibes.com
   to:
     kind: Service
-    name: nintendo-vibes
+    name: joy-con-readers
   port:
     targetPort: http
   tls:
     termination: edge
     # Allow plain http: the Mac's Chrome is told to treat
-    # http://nintendo-vibes.nintendovibes.com as secure
+    # http://joy-con-readers.nintendovibes.com as secure
     # (chrome://flags/#unsafely-treat-insecure-origin-as-secure), which is
     # what lets Web Bluetooth / WebHID work without a trusted certificate.
     insecureEdgeTerminationPolicy: Allow
