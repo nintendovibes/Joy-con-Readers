@@ -20,10 +20,17 @@ stations can run at once, each with its own Joy-Con. To add a game, add it to
 `KNOWN_STATIONS` in `src/reader.js` and have the game poll
 `/last-nfc?station=<station>`.
 
-## Why HTTPS matters here
+## Letting Chrome use Bluetooth here
 
 Web Bluetooth (Switch 2 Joy-Con) and WebHID (Switch 1 Joy-Con) only work on
-pages the browser fully trusts. nintendovibes.com only exists on the home
+pages Chrome treats as secure. The simple way (the same as Bowser Jr): in
+Chrome on the Mac, open
+`chrome://flags/#unsafely-treat-insecure-origin-as-secure`, add
+`http://nintendo-vibes.nintendovibes.com`, set it to Enabled and relaunch.
+The Route allows plain http for this. If Chrome ever resets the flag after an
+update, add it again.
+
+The alternative is a trusted certificate: nintendovibes.com only exists on the home
 network, so no public certificate authority can issue it a certificate.
 Instead there's a private **Nintendo Vibes CA** whose name constraints only
 let it vouch for `nintendovibes.com` names.

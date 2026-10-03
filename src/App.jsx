@@ -38,9 +38,9 @@ function Home() {
       <section className="panel">
         <div className="label">FIRST TIME ON THIS COMPUTER?</div>
         <p className="muted">
-          Bluetooth only works on trusted pages. Download the{' '}
-          <a href="/nintendovibes-ca.crt" className="link">Nintendo Vibes certificate</a>, open it, add it to the login
-          keychain, and in Keychain Access set it to Always Trust. Then quit and reopen Chrome.
+          Chrome only allows Bluetooth on pages it treats as secure. In Chrome on this computer, open
+          {' '}<code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code>, add
+          {' '}<code>http://nintendo-vibes.nintendovibes.com</code>, set it to Enabled, and relaunch Chrome.
         </p>
       </section>
     </main>
