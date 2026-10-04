@@ -51,7 +51,9 @@ const VALID_UID_LENGTHS = new Set([4, 7, 10])
 
 const STEP_MS = 100                // gap between set-up commands
 const SETUP_TRIES = 30
-const POLL_MS = 300                // how often "start polling" is re-sent
+// How often "start polling" is re-sent. Faster = a quick tap is less likely
+// to slip between checks.
+const POLL_MS = 150
 // A search times out with an error after ~65 s (seen on hardware: state 0x07,
 // result 0x41), so restart it well before then.
 const POLL_CYCLE_MS = 30000

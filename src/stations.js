@@ -57,6 +57,7 @@ class Readers extends EventTarget {
   addLog(text, level = 'info') {
     const time = new Date().toLocaleTimeString()
     this.log = [{ time, text, level, key: `${Date.now()}-${Math.random()}` }, ...this.log].slice(0, MAX_LOG)
+    shipLog({ level, text })
     this._changed()
   }
 
@@ -145,6 +146,8 @@ class Readers extends EventTarget {
       if (e.detail === 'connected') jc.startNfcScan?.()
     })
     jc.addEventListener('nfc', e => this._send(card, e.detail.uid))
+    jc.addEventListener('debug', e => shipLog({ level: 'debug', station: card.station, text: e.detail }))
+    jc.addEventListener('connection', e => shipLog({ level: 'debug', station: card.station, text: JSON.stringify(e.detail) }))
     card.joycon = jc
     card.key = key
     this._changed()
@@ -276,6 +279,17 @@ async function playerName(uid) {
   } catch {
     return null
   }
+}
+
+// Dev only: sends a log line to the PC running the dev server
+// (logs/joy-con-readers.jsonl), for diagnosing missed scans and drops.
+function shipLog(entry) {
+  if (!import.meta.env.DEV) return
+  fetch('/__debug-log?name=joy-con-readers', {
+    method: 'POST',
+    body: JSON.stringify({ at: new Date().toISOString(), ...entry }),
+    keepalive: true,
+  }).catch(() => {})
 }
 
 export const readers = new Readers()

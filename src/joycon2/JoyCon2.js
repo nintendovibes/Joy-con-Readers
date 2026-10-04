@@ -48,7 +48,7 @@ const NFC_TAG_GONE_MS = 2500
 // (dropped, asleep, or remembered from an earlier visit) is 'waiting': it
 // keeps listening and connects as soon as the Joy-Con advertises — i.e. when
 // someone holds its sync button. No clicks needed.
-const KEEPALIVE_MS = 20000
+const KEEPALIVE_MS = 10000
 const CMD_FEATURE_INFO = { command: 0x0c, sub: 0x01, data: [0x2f, 0x00, 0x00, 0x00] }
 const LISTEN_RETRY_MIN_MS = 1000
 const LISTEN_RETRY_MAX_MS = 5000
